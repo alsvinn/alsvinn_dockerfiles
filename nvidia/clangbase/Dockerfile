@@ -1,6 +1,6 @@
 FROM nvidia/cuda:10.0-devel-ubuntu18.04
 LABEL alsvinn_version="from_disk_only_testing"
-ARG EXTRA_CFLAGS=""
+
 ##### NOTE: We want to use MPICH, since it is the "native" supported MPI library for most clusters
 ##### (on Cray clusters they usually replace the mpich library with their own in the docker/shifter container)
 ##### Because of this, we need to compile some packages ourselves, even though they come with ubuntu
@@ -24,6 +24,8 @@ ENV CC clang
 ENV CXX clang++
 
 ENV ALSVINN_IN_DOCKER 1
+
+ARG EXTRA_CFLAGS=""
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git \
@@ -59,6 +61,7 @@ RUN cd $HOME &&\
     cd $HOME &&\
     rm -rf cmake*
 
+RUN echo ${EXTRA_CFLAGS}
 ##### NETCDF
 RUN export H5DIR=/usr/lib/mpich && \ 
    cd $HOME && \
@@ -67,7 +70,7 @@ RUN export H5DIR=/usr/lib/mpich && \
     cd netcdf-${NETCDF_VERSION} &&\
     mkdir build;\
     cd build;\
-    $INSTALL_PREFIX/bin/cmake .. -DCMAKE_C_COMPILER=`which $CC` -DCMAKE_CXX_FLAGS='-stdlib=libc++ -lc++abi ${EXTRA_CFLAGS}' -DCMAKE_EXE_LINKER_FLAGS='-stdlib=libc++ -lc++abi' -DCMAKE_LINKER='lld' -DCMAKE_CXX_COMPILER=`which $CXX` -DHDF5_DIR=/usr/include/hdf5/mpich -DHDF5_INCLUDE_DIR=/usr/include/hdf5/mpich -DHDF5_LIBRARY=/usr/lib/mpich/lib/libhdf5_mpich.so -DCMAKE_PREFIX_PATH=/usr/include/hdf5/mpich -DCMAKE_C_FLAGS='-I/usr/lib/mpich/include -stdlib=libc++ -lc++abi ${EXTRA_CFLAGS}' -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX && \
+    $INSTALL_PREFIX/bin/cmake .. -DCMAKE_C_COMPILER=`which $CC` -DCMAKE_LINKER='lld' -DCMAKE_CXX_COMPILER=`which $CXX` -DHDF5_DIR=/usr/include/hdf5/mpich -DHDF5_INCLUDE_DIR=/usr/include/hdf5/mpich -DHDF5_LIBRARY=/usr/lib/mpich/lib/libhdf5_mpich.so -DCMAKE_PREFIX_PATH=/usr/include/hdf5/mpich -DCMAKE_C_FLAGS="-I/usr/lib/mpich/include ${EXTRA_CFLAGS}" -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX && \
     make install &&\
     cd ../.. &&\
     rm -rf netcdf*
@@ -78,7 +81,7 @@ RUN cd ~ && \
     export CC=`which mpicc`;\
     tar xvf parallel-netcdf-${PNETCDF_VERSION}.tar.gz &&\
     cd parallel-netcdf-${PNETCDF_VERSION} &&\
-    export CFLAGS='-fPIC ${EXTRA_CFLAGS}' &&\
+    export CFLAGS='-fPIC' &&\
     ./configure --prefix=$INSTALL_PREFIX &&\
     make install &&\
     cd $HOME &&\
@@ -91,7 +94,7 @@ RUN cd $HOME &&\
     cd googletest-release-${GTEST_VERSION} &&\
     mkdir build &&\
     cd build &&\
-    $INSTALL_PREFIX/bin/cmake .. -DCMAKE_CXX_FLAGS='-stdlib=libc++ -lc++abi ${EXTRA_CFLAGS}' -DCMAKE_EXE_LINKER_FLAGS='-stdlib=libc++ -lc++abi' -DCMAKE_LINKER='lld' -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCMAKE_C_COMPILER=`which $CC` -DCMAKE_CXX_COMPILER=`which $CXX`&&\
+    $INSTALL_PREFIX/bin/cmake .. -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi ${EXTRA_CFLAGS}" -DCMAKE_EXE_LINKER_FLAGS='-stdlib=libc++ -lc++abi' -DCMAKE_LINKER='lld' -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCMAKE_C_COMPILER=`which $CC` -DCMAKE_CXX_COMPILER=`which $CXX`&&\
     make install &&\
     find . -iname '*.a' -exec cp {} ${INSTALL_PREFIX}/lib/ \; &&\
     cd $HOME &&\
