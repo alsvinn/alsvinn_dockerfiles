@@ -114,8 +114,8 @@ RUN cd $HOME; \
     export PATH=$HOME/local/bin:$PATH:$HOME/local/bin &&\
     cd $HOME&&\
     cd alsvinn &&\
-    mkdir build &&\
-    cd build &&\
+    mkdir build_docker &&\
+    cd build_docker &&\
     $INSTALL_PREFIX/bin/cmake .. -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX} \
     	  -DCMAKE_BUILD_TYPE=Debug \
 	  -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc \

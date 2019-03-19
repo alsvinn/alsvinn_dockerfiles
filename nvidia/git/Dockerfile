@@ -1,4 +1,4 @@
-FROM nvidia/cuda:8.0-devel-ubuntu16.04
+FROM nvidia/cuda:9.1-devel-ubuntu16.04
 LABEL alsvinn_version="git"
 
 ##### NOTE: We want to use MPICH, since it is the "native" supported MPI library for most clusters
@@ -13,22 +13,21 @@ ENV NETCDF_VERSION 4.6.1
 ENV GTEST_VERSION 1.8.0
 
 ENV BOOST_MAJOR_VERSION 1
-ENV BOOST_MINOR_VERSION 66
+ENV BOOST_MINOR_VERSION 68
 ENV BOOST_RELEASE_VERSION 0
 
-ENV HDF5_VERSION 1.8.20
+ENV HDF5_VERSION 1.10.5
 
 ENV CMAKE_MAJOR_VERSION 3
-ENV CMAKE_MINOR_VERSION 12
-ENV CMAKE_RELEASE_VERSION 2
+ENV CMAKE_MINOR_VERSION 14
+ENV CMAKE_RELEASE_VERSION 0
 ENV GCC_VERSION 5
 ENV CC gcc-${GCC_VERSION}
 ENV CXX g++-${GCC_VERSION}
 
 ENV ALSVINN_IN_DOCKER 1
 
-RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git \
     cmake\
     build-essential\
     wget\
@@ -42,17 +41,39 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git \
     python-matplotlib \
     python-numpy\
     python-scipy\
+    python3\
     python-dev \
     libcurl4-openssl-dev \
-    zlib1g-dev
+    zlib1g-dev\
+    curl\
+    cuda-tools-9-1\
+    cuda-toolkit-9-1\
+    cuda-misc-headers-9-1\
+    cuda-libraries-dev-9-1\
+    cuda-cudart-dev-9-1 \
+    cuda-core-9-1\
+    cuda-cublas-9-1\
+    cuda-cufft-dev-9-1\
+    cuda-cupti-9-1\
+    cuda-curand-9-1\
+    cuda-cuobjdump-9-1\
+    cuda-cusolver-9-1\
+    cuda-cusparse-9-1\
+    cuda-driver-dev-9-1\
+    cuda-gdb-9-1\
+    cuda-npp-dev-9-1\
+    cuda-nvgraph-dev-9-1\
+    cuda-nvml-dev-9-1\
+    cuda-nvrtc-dev-9-1\
+    cuda-runtime-9-1\
+    cuda-visual-tools-9-1
+    
+    
+    
+
+RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && python3 get-pip.py && pip3 install numpy matplotlib jupyter matplotlib2tikz scipy GitPython
 
 
-# RUN apt-get update && \
-#     apt-get install build-essential software-properties-common -y && \
-#     add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
-#     apt-get update && \
-#     apt-get install gcc-${GCC_VERSION} g++-${GCC_VERSION} -y&&\
-#     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_VERSION} ${GCC_VERSION}0 --slave /usr/bin/g++ g++ /usr/bin/g++-${GCC_VERSION}
 
 #### MPICH 
 RUN cd $HOME;\
@@ -63,45 +84,16 @@ RUN cd $HOME;\
     ./autogen.sh&&\
     ./configure --prefix=$INSTALL_PREFIX --disable-fortran&&\
     make install
-
-
-
+    
 #### HDF5
-# RUN cd $HOME;\
-#     export CC=${INSTALL_PREFIX}/bin/mpicc&&\
-#     wget https://support.hdfgroup.org/ftp/HDF5/current18/src/CMake-hdf5-${HDF5_VERSION}.tar.gz&&\
-#     tar xvf CMake-hdf5-${HDF5_VERSION}.tar.gz&&\
-#     cd CMake-hdf5-${HDF5_VERSION} &&\
-#     tar xvf SZip.tar.gz &&\
-#     cd SZip &&\
-#     mkdir build&&\
-#     cd build&&\
-#     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DDISABLE_FORTRAN=ON -DHDF5_BUILD_CPP_LIB=OFF&&\
-#     make install&&\
-#     cd ..&&\
-#     cd ..&&\
-#     tar xvf ZLib.tar.gz&&\
-#     cd ZLib &&\
-#     mkdir build&&\
-#     cd build&&\
-#     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX  -DDISABLE_FORTRAN=ON &&\
-#     make install &&\
-#     cd ..&&\
-#     cd ..&&\
-#     cd hdf5-${HDF5_VERSION}&&\
-#     mkdir build&&\
-#     cd build&&\
-#     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX   -DDISABLE_FORTRAN=ON -DHDF5_ENABLE_PARALLEL=ON -DHDF5_BUILD_CPP_LIB=OFF&&\
-#     make install
-
-
-RUN cd $HOME;\
+RUN cd $HOME&&\
     export CC=${INSTALL_PREFIX}/bin/mpicc&&\
-    wget https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-${HDF5_VERSION}.tar.gz&&\
-    tar xvf hdf5-${HDF5_VERSION}.tar.gz&&\
+    wget -O hdf5.tar.bz2 "https://www.hdfgroup.org/package/hdf5-${HDF5_VERSION}-tar-bz2/?wpdmdl=13570&refresh=5c90e67332c151553000051" &&\
+    tar xvf hdf5.tar.bz2&&\
     cd hdf5-${HDF5_VERSION} &&\
     ./configure --prefix=$INSTALL_PREFIX --enable-mpi --enable-parallel --disable-cpp-lib&&\
-    make install
+    make install&&\
+    rm -rf hdf5*
 
 ##### CMAKE
 RUN cd $HOME &&\
@@ -164,29 +156,7 @@ RUN cd $HOME &&\
     cd $HOME && \
     rm -rf boost_*
 
-# ENV ALSVINN_CUDA_PKG_VERSION 9-2
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#         cuda-core-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-misc-headers-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-command-line-tools-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-nvrtc-dev-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-nvml-dev-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-nvgraph-dev-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-cusolver-dev-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-cublas-dev-8-0=8.0.61.2-1 \
-#         cuda-cufft-dev-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-curand-dev-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-cusparse-dev-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-npp-dev-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-cudart-dev-$ALSVINN_CUDA_PKG_VERSION \
-#         cuda-driver-dev-$ALSVINN_CUDA_PKG_VERSION && \
-#     rm -rf /var/lib/apt/lists/*
-
-
-
-
-    
-    
+RUN apt-cache search cuda
 RUN cd $HOME; \	
     git clone --recursive https://github.com/alsvinn/alsvinn.git; \
     export PATH=$HOME/local/bin:$PATH:$HOME/local/bin &&\
@@ -197,7 +167,7 @@ RUN cd $HOME; \
     $INSTALL_PREFIX/bin/cmake .. -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX} \
     	  -DCMAKE_BUILD_TYPE=Release \
     	  -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc \
-    	  -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-8.0	  \
+    	  -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-9.1	  \
     	  -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython2.7.so.1 \
     	  -DPYTHON_INCLUDE_DIR=/usr/include/python2.7 \
     	  -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX  \
