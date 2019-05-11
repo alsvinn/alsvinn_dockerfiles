@@ -5,15 +5,13 @@ RUN apt-get update && \
     apt-get install --yes libnetcdf-mpi-dev build-essential \
     	cmake python3 python3-matplotlib python3-numpy python3-scipy git \
 	libopenmpi-dev gcc g++ libgtest-dev libboost-all-dev doxygen graphviz \
-	libhdf5-mpi-dev libpnetcdf-dev \
-	nvidia-cuda-dev nvidia-cuda-toolkit 
+	libhdf5-mpi-dev libpnetcdf-dev python3-ipykernel \
+	jupyter-notebook python3-notebook python3-pip python3-git \
+	python3-netcdf4
 
-# RUN git clone --recursive https://github.com/alsvinn/alsvinn.git &&\
-#     cd alsvinn &&\
-#     mkdir build &&\
-#     cd build &&\
-#     cmake .. -DCMAKE_BUILD_TYPE=Release -DALSVINN_PYTHON_VERSION=3.7 &&\
-#     make install
-     
+RUN pip3 install matplotlib2tikz
+	
+	
+
 
 	
