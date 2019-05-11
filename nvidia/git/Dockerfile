@@ -71,7 +71,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git \
     
     
 
-RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && python3 get-pip.py && pip3 install numpy matplotlib jupyter matplotlib2tikz scipy GitPython
+RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && python3 get-pip.py && pip3 install numpy matplotlib jupyter matplotlib2tikz scipy GitPython dicttoxml
 
 
 
@@ -157,11 +157,14 @@ RUN cd $HOME &&\
     rm -rf boost_*
 
 RUN apt-cache search cuda
+
+ARG ALSVINN_GIT_VERSION=master
 RUN cd $HOME; \	
     git clone --recursive https://github.com/alsvinn/alsvinn.git; \
     export PATH=$HOME/local/bin:$PATH:$HOME/local/bin &&\
     cd $HOME&&\
     cd alsvinn &&\
+    git checkout ${ALSVINN_GIT_VERSION} &&\
     mkdir build &&\
     cd build &&\
     $INSTALL_PREFIX/bin/cmake .. -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX} \
@@ -176,6 +179,23 @@ RUN cd $HOME; \
     make VERBOSE=1&& \
     make install &&\
     echo 'Finished'
+
+# We also want to compile the examples
+RUN cd $HOME/alsvinn &&\
+    cd library_examples/alsuq &&\
+    cd only_statistics &&\
+    mkdir build && \
+    cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release &&\
+    make && \
+    cd ../.. && \
+    cd generate_parameters && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release &&\
+    make &&\
+    cp generate_parameters /usr/local/bin/
+    
     
 # shifter doesn't like these libraries
 #RUN rm /usr/lib/libmpifort* && rm /usr/lib/libmpicxx*
