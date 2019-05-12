@@ -7,7 +7,7 @@ FROM nvidia/cuda:9.1-devel-ubuntu16.04
 ENV INSTALL_PREFIX /usr/local
 
 
-ENV PNETCDF_VERSION 1.10.0
+ENV PNETCDF_VERSION 1.11.1
 ENV NETCDF_VERSION 4.6.1
 ENV GTEST_VERSION 1.8.0
 
@@ -119,15 +119,15 @@ RUN cd $HOME && \
 
 ##### PNETCDF
 RUN cd ~ && \
-    wget http://cucis.ece.northwestern.edu/projects/PnetCDF/Release/parallel-netcdf-${PNETCDF_VERSION}.tar.gz &&\
+    wget https://parallel-netcdf.github.io/Release/pnetcdf-${PNETCDF_VERSION}.tar.gz &&\
     export CC=`which mpicc`;\
-    tar xvf parallel-netcdf-${PNETCDF_VERSION}.tar.gz &&\
-    cd parallel-netcdf-${PNETCDF_VERSION} &&\
+    tar xvf pnetcdf-${PNETCDF_VERSION}.tar.gz &&\
+    cd pnetcdf-${PNETCDF_VERSION} &&\
     export CFLAGS='-fPIC' &&\
     ./configure --prefix=$INSTALL_PREFIX &&\
     make install &&\
     cd $HOME &&\
-    rm -rf parallel-netcdf*
+    rm -rf pnetcdf*
 
 ##### GTest
 RUN cd $HOME &&\
