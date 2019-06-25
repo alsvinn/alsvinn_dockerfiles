@@ -20,23 +20,22 @@ RUN apt-get update && \
     apt-get install --yes build-essential \
     	cmake python3 python3-matplotlib python3-numpy python3-scipy git \
 	gcc g++ libgtest-dev libboost-all-dev doxygen graphviz \
-	python3-ipykernel \
-	jupyter-notebook python3-notebook python3-pip python3-git \
-	python3-netcdf4 python3-dicttoxml wget m4 libcurl4-openssl-dev
+		python3-pip  \
+	wget m4 libcurl4-openssl-dev
+COPY requirements.txt /requirements.txt
+RUN pip3 install -r requirements.txt
 
-RUN pip3 install matplotlib2tikz
-
-#### MPICH 
+#### MPICH
 RUN cd $HOME;\
     export PERL_USE_UNSAFE_INC=1 &&\
-    wget https://github.com/pmodels/mpich/archive/v3.1.4.tar.gz&&\ 
+    wget https://github.com/pmodels/mpich/archive/v3.1.4.tar.gz&&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y libtool autoconf&&\
     tar xvf v3.1.4.tar.gz&&\
     cd mpich-3.1.4&&\
     ./autogen.sh&&\
     ./configure --prefix=$INSTALL_PREFIX --disable-fortran&&\
     make install
-    
+
 #### HDF5
 RUN cd $HOME&&\
     export CC=${INSTALL_PREFIX}/bin/mpicc&&\
@@ -49,7 +48,7 @@ RUN cd $HOME&&\
 
 ##### NETCDF
 RUN cd $HOME && \
-    export CC=${INSTALL_PREFIX}/bin/mpicc&&\	
+    export CC=${INSTALL_PREFIX}/bin/mpicc&&\
     wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-${NETCDF_VERSION}.tar.gz &&\
     tar xvf netcdf-${NETCDF_VERSION}.tar.gz && \
     cd netcdf-${NETCDF_VERSION} &&\
@@ -71,10 +70,3 @@ RUN cd ~ && \
     make install &&\
     cd $HOME &&\
     rm -rf pnetcdf*
-
-
-	
-	
-
-
-	

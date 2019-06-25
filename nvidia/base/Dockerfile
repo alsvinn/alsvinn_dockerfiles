@@ -24,7 +24,6 @@ ENV GCC_VERSION 5
 ENV CC gcc-${GCC_VERSION}
 ENV CXX g++-${GCC_VERSION}
 
-
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git \
     cmake\
     build-essential\
@@ -34,55 +33,33 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git \
     libomp-dev\
     m4\
     unzip\
-    cuda-compiler-9-2\
-    python\
-    python-matplotlib \
-    python-numpy\
-    python-scipy\
-    python3\
-    python-dev \
+    cuda-compiler-9-1\
     libcurl4-openssl-dev \
     zlib1g-dev\
-    curl\
-    cuda-tools-9-1\
-    cuda-toolkit-9-1\
-    cuda-misc-headers-9-1\
-    cuda-libraries-dev-9-1\
-    cuda-cudart-dev-9-1 \
-    cuda-core-9-1\
-    cuda-cublas-9-1\
-    cuda-cufft-dev-9-1\
-    cuda-cupti-9-1\
-    cuda-curand-9-1\
-    cuda-cuobjdump-9-1\
-    cuda-cusolver-9-1\
-    cuda-cusparse-9-1\
-    cuda-driver-dev-9-1\
-    cuda-gdb-9-1\
-    cuda-npp-dev-9-1\
-    cuda-nvgraph-dev-9-1\
-    cuda-nvml-dev-9-1\
-    cuda-nvrtc-dev-9-1\
-    cuda-runtime-9-1\
-    cuda-visual-tools-9-1
-    
-    
-    
+    software-properties-common\
+    curl
 
-RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && python3 get-pip.py && pip3 install numpy matplotlib jupyter matplotlib2tikz scipy GitPython dicttoxml
+####### Python
+# Python 3.7
+COPY requirements.txt /requirements.txt
+RUN add-apt-repository -y ppa:deadsnakes/ppa && \
+      apt-get update -qq &&\
+      apt-get install -y python3.7 python3.7-dev && \
+      curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+      python3.7 get-pip.py && \
+      pip3.7 install -r requirements.txt
 
 
-
-#### MPICH 
+#### MPICH
 RUN cd $HOME;\
-    wget https://github.com/pmodels/mpich/archive/v3.1.4.tar.gz&&\ 
+    wget https://github.com/pmodels/mpich/archive/v3.1.4.tar.gz&&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y libtool autoconf&&\
     tar xvf v3.1.4.tar.gz&&\
     cd mpich-3.1.4&&\
     ./autogen.sh&&\
     ./configure --prefix=$INSTALL_PREFIX --disable-fortran&&\
     make install
-    
+
 #### HDF5
 RUN cd $HOME&&\
     export CC=${INSTALL_PREFIX}/bin/mpicc&&\
@@ -106,7 +83,7 @@ RUN cd $HOME &&\
 
 ##### NETCDF
 RUN cd $HOME && \
-    export CC=${INSTALL_PREFIX}/bin/mpicc&&\	
+    export CC=${INSTALL_PREFIX}/bin/mpicc&&\
     wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-${NETCDF_VERSION}.tar.gz &&\
     tar xvf netcdf-${NETCDF_VERSION}.tar.gz && \
     cd netcdf-${NETCDF_VERSION} &&\
@@ -136,7 +113,7 @@ RUN cd $HOME &&\
     cd googletest-release-${GTEST_VERSION} &&\
     mkdir build &&\
     cd build &&\
-    $INSTALL_PREFIX/bin/cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCMAKE_C_COMPILER=`which $CC` -DCMAKE_CXX_COMPILER=`which $CXX`&&\
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCMAKE_C_COMPILER=`which $CC` -DCMAKE_CXX_COMPILER=`which $CXX`&&\
     make install &&\
     find . -iname '*.a' -exec cp {} ${INSTALL_PREFIX}/lib/ \; &&\
     cd $HOME &&\
@@ -145,14 +122,15 @@ RUN cd $HOME &&\
 
 
 
-
+###### BOOST
 RUN cd $HOME &&\
     wget https://dl.bintray.com/boostorg/release/${BOOST_MAJOR_VERSION}.${BOOST_MINOR_VERSION}.${BOOST_RELEASE_VERSION}/source/boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION}.tar.bz2 && \
     tar xvf boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION}.tar.bz2 && cd boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION} && \
-    ./bootstrap.sh --with-python=`which python` --prefix=$INSTALL_PREFIX && \
+    ./bootstrap.sh --with-python=`which python3.7` --prefix=$INSTALL_PREFIX && \
     ./b2 --build-type=complete --toolset=$CC --layout=tagged install && \
     cd $HOME && \
     rm -rf boost_*
+
 
 RUN rm /etc/ld.so.cache && ldconfig
 RUN ldconfig
