@@ -6,6 +6,7 @@ FROM nvidia/cuda:9.1-devel-ubuntu16.04
 ##### (but only with openmpi support)
 ENV INSTALL_PREFIX /usr/local
 
+ENV ALSVINN_PYTHON_VERSION 3.7
 
 ENV PNETCDF_VERSION 1.11.1
 ENV NETCDF_VERSION 4.6.1
