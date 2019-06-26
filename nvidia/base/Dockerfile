@@ -1,4 +1,4 @@
-FROM nvidia/cuda:9.1-devel-ubuntu16.04
+FROM nvidia/cuda:9.2-devel-ubuntu16.04
 
 ##### NOTE: We want to use MPICH, since it is the "native" supported MPI library for most clusters
 ##### (on Cray clusters they usually replace the mpich library with their own in the docker/shifter container)
@@ -21,7 +21,7 @@ ENV HDF5_VERSION 1.10.5
 ENV CMAKE_MAJOR_VERSION 3
 ENV CMAKE_MINOR_VERSION 14
 ENV CMAKE_RELEASE_VERSION 0
-ENV GCC_VERSION 8
+ENV GCC_VERSION 7
 ENV CC gcc-${GCC_VERSION}
 ENV CXX g++-${GCC_VERSION}
 
@@ -31,8 +31,8 @@ RUN apt-get update &&\
     apt-get update &&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-snapshot &&\
     apt-get update &&\
-    DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-8 g++-8 &&\
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 80 --slave /usr/bin/g++ g++ /usr/bin/g++-8 
+    DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-${GCC_VERSION} g++-${GCC_VERSION} &&\
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_VERSION} ${GCC_VERSION}0 --slave /usr/bin/g++ g++ /usr/bin/g++-${GCC_VERSION} 
     
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git \
     build-essential\
