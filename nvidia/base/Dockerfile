@@ -21,16 +21,23 @@ ENV HDF5_VERSION 1.10.5
 ENV CMAKE_MAJOR_VERSION 3
 ENV CMAKE_MINOR_VERSION 14
 ENV CMAKE_RELEASE_VERSION 0
-ENV GCC_VERSION 5
+ENV GCC_VERSION 8
 ENV CC gcc-${GCC_VERSION}
 ENV CXX g++-${GCC_VERSION}
 
+RUN apt-get update &&\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential software-properties-common &&\    
+    add-apt-repository ppa:ubuntu-toolchain-r/test -y &&\
+    apt-get update &&\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-snapshot &&\
+    apt-get update &&\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-8 g++-8 &&\
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 80 --slave /usr/bin/g++ g++ /usr/bin/g++-8 
+    
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git \
-    cmake\
     build-essential\
     wget\
     doxygen\
-    clang\
     libomp-dev\
     m4\
     unzip\
@@ -55,7 +62,7 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
 RUN cd $HOME;\
     wget https://github.com/pmodels/mpich/archive/v3.1.4.tar.gz&&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y libtool autoconf&&\
-    tar xvf v3.1.4.tar.gz&&\
+    tar xvf v3.1.4.tar.gz > /dev/null &&\
     cd mpich-3.1.4&&\
     ./autogen.sh&&\
     ./configure --prefix=$INSTALL_PREFIX --disable-fortran&&\
@@ -65,7 +72,7 @@ RUN cd $HOME;\
 RUN cd $HOME&&\
     export CC=${INSTALL_PREFIX}/bin/mpicc&&\
     wget -O hdf5.tar.bz2 "https://www.hdfgroup.org/package/hdf5-${HDF5_VERSION}-tar-bz2/?wpdmdl=13570&refresh=5c90e67332c151553000051" &&\
-    tar xvf hdf5.tar.bz2&&\
+    tar xvf hdf5.tar.bz2 > /dev/null &&\
     cd hdf5-${HDF5_VERSION} &&\
     ./configure --prefix=$INSTALL_PREFIX --enable-mpi --enable-parallel --disable-cpp-lib&&\
     make install&&\
@@ -74,7 +81,7 @@ RUN cd $HOME&&\
 ##### CMAKE
 RUN cd $HOME &&\
     wget https://cmake.org/files/v${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_RELEASE_VERSION}.tar.gz &&\
-    tar xvf cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_RELEASE_VERSION}.tar.gz &&\
+    tar xvf cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_RELEASE_VERSION}.tar.gz > /dev/null &&\
     cd cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_RELEASE_VERSION} && \
     ./bootstrap --system-curl --prefix=$INSTALL_PREFIX && \
     make && \
@@ -86,7 +93,7 @@ RUN cd $HOME &&\
 RUN cd $HOME && \
     export CC=${INSTALL_PREFIX}/bin/mpicc&&\
     wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-${NETCDF_VERSION}.tar.gz &&\
-    tar xvf netcdf-${NETCDF_VERSION}.tar.gz && \
+    tar xvf netcdf-${NETCDF_VERSION}.tar.gz > /dev/null && \
     cd netcdf-${NETCDF_VERSION} &&\
     mkdir build;\
     cd build;\
@@ -99,7 +106,7 @@ RUN cd $HOME && \
 RUN cd ~ && \
     wget https://parallel-netcdf.github.io/Release/pnetcdf-${PNETCDF_VERSION}.tar.gz &&\
     export CC=`which mpicc`;\
-    tar xvf pnetcdf-${PNETCDF_VERSION}.tar.gz &&\
+    tar xvf pnetcdf-${PNETCDF_VERSION}.tar.gz > /dev/null &&\
     cd pnetcdf-${PNETCDF_VERSION} &&\
     export CFLAGS='-fPIC' &&\
     ./configure --prefix=$INSTALL_PREFIX &&\
@@ -110,7 +117,7 @@ RUN cd ~ && \
 ##### GTest
 RUN cd $HOME &&\
     wget https://github.com/google/googletest/archive/release-${GTEST_VERSION}.zip &&\
-    unzip release-${GTEST_VERSION}.zip &&\
+    unzip release-${GTEST_VERSION}.zip >/dev/null&&\
     cd googletest-release-${GTEST_VERSION} &&\
     mkdir build &&\
     cd build &&\
@@ -127,8 +134,8 @@ RUN cd $HOME &&\
 RUN cd $HOME &&\
     wget https://dl.bintray.com/boostorg/release/${BOOST_MAJOR_VERSION}.${BOOST_MINOR_VERSION}.${BOOST_RELEASE_VERSION}/source/boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION}.tar.bz2 && \
     tar xvf boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION}.tar.bz2 && cd boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION} && \
-    ./bootstrap.sh --with-python=`which python3.7` --prefix=$INSTALL_PREFIX && \
-    ./b2 --build-type=complete --toolset=$CC --layout=tagged install && \
+    ./bootstrap.sh --with-python=`which python3.7` --with-libraries=program_options,filesystem,system,python,regex,thread,chrono,date_time,log --prefix=$INSTALL_PREFIX && \
+    ./b2  --toolset=gcc --layout=tagged --threading=multiinstall && \
     cd $HOME && \
     rm -rf boost_*
 
