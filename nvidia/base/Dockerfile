@@ -135,7 +135,7 @@ RUN cd $HOME &&\
     wget https://dl.bintray.com/boostorg/release/${BOOST_MAJOR_VERSION}.${BOOST_MINOR_VERSION}.${BOOST_RELEASE_VERSION}/source/boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION}.tar.bz2 && \
     tar xvf boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION}.tar.bz2 && cd boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION} && \
     ./bootstrap.sh --with-python=`which python3.7` --with-libraries=program_options,filesystem,system,python,regex,thread,chrono,date_time,log --prefix=$INSTALL_PREFIX && \
-    ./b2  --toolset=gcc --layout=tagged --threading=multiinstall && \
+    ./b2  --toolset=gcc --layout=tagged --threading=multi install && \
     cd $HOME && \
     rm -rf boost_*
 
