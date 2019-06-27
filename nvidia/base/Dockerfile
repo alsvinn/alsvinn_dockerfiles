@@ -8,8 +8,8 @@ ENV INSTALL_PREFIX /usr/local
 
 ENV ALSVINN_PYTHON_VERSION 3.7
 
-ENV PNETCDF_VERSION 1.11.1
-ENV NETCDF_VERSION 4.6.1
+ENV PNETCDF_VERSION 1.11.2
+ENV NETCDF_VERSION 4.7.0
 ENV GTEST_VERSION 1.8.0
 
 ENV BOOST_MAJOR_VERSION 1
@@ -62,7 +62,7 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
 RUN cd $HOME;\
     wget https://github.com/pmodels/mpich/archive/v3.1.4.tar.gz&&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y libtool autoconf&&\
-    tar xvf v3.1.4.tar.gz > /dev/null &&\
+    tar xf v3.1.4.tar.gz > /dev/null &&\
     cd mpich-3.1.4&&\
     ./autogen.sh&&\
     ./configure --prefix=$INSTALL_PREFIX --disable-fortran&&\
@@ -72,7 +72,7 @@ RUN cd $HOME;\
 RUN cd $HOME&&\
     export CC=${INSTALL_PREFIX}/bin/mpicc&&\
     wget -O hdf5.tar.bz2 "https://www.hdfgroup.org/package/hdf5-${HDF5_VERSION}-tar-bz2/?wpdmdl=13570&refresh=5c90e67332c151553000051" &&\
-    tar xvf hdf5.tar.bz2 > /dev/null &&\
+    tar xf hdf5.tar.bz2 > /dev/null &&\
     cd hdf5-${HDF5_VERSION} &&\
     ./configure --prefix=$INSTALL_PREFIX --enable-mpi --enable-parallel --disable-cpp-lib&&\
     make install&&\
@@ -81,7 +81,7 @@ RUN cd $HOME&&\
 ##### CMAKE
 RUN cd $HOME &&\
     wget https://cmake.org/files/v${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_RELEASE_VERSION}.tar.gz &&\
-    tar xvf cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_RELEASE_VERSION}.tar.gz > /dev/null &&\
+    tar xf cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_RELEASE_VERSION}.tar.gz > /dev/null &&\
     cd cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_RELEASE_VERSION} && \
     ./bootstrap --system-curl --prefix=$INSTALL_PREFIX && \
     make && \
@@ -89,24 +89,26 @@ RUN cd $HOME &&\
     cd $HOME &&\
     rm -rf cmake*
 
+
 ##### NETCDF
 RUN cd $HOME && \
     export CC=${INSTALL_PREFIX}/bin/mpicc&&\
-    wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-${NETCDF_VERSION}.tar.gz &&\
-    tar xvf netcdf-${NETCDF_VERSION}.tar.gz > /dev/null && \
-    cd netcdf-${NETCDF_VERSION} &&\
+    wget https://github.com/Unidata/netcdf-c/archive/v${NETCDF_VERSION}.tar.gz &&\
+    tar xf v${NETCDF_VERSION}.tar.gz && \
+    cd netcdf-c-${NETCDF_VERSION} &&\
     mkdir build;\
     cd build;\
-    $INSTALL_PREFIX/bin/cmake .. -DCMAKE_C_COMPILER=`which $CC` -DCMAKE_CXX_COMPILER=`which $CXX` -DHDF5_DIR=/usr/local -DHDF5_INCLUDE_DIR=/usr/local/include -DHDF5_LIBRARY=/usr/local/lib/libhdf5.so -DCMAKE_PREFIX_PATH=/usr/local -DCMAKE_C_FLAGS='-I/usr/local/include' -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX && \
+    cmake .. -DCMAKE_C_COMPILER=`which $CC` -DCMAKE_CXX_COMPILER=`which $CXX` -DHDF5_DIR=/usr/local -DHDF5_INCLUDE_DIR=/usr/local/include -DHDF5_LIBRARY=/usr/local/lib/libhdf5.so -DCMAKE_PREFIX_PATH=/usr/local -DCMAKE_C_FLAGS='-I/usr/local/include' -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX && \
     make install &&\
     cd ../.. &&\
     rm -rf netcdf*
+
 
 ##### PNETCDF
 RUN cd ~ && \
     wget https://parallel-netcdf.github.io/Release/pnetcdf-${PNETCDF_VERSION}.tar.gz &&\
     export CC=`which mpicc`;\
-    tar xvf pnetcdf-${PNETCDF_VERSION}.tar.gz > /dev/null &&\
+    tar xf pnetcdf-${PNETCDF_VERSION}.tar.gz > /dev/null &&\
     cd pnetcdf-${PNETCDF_VERSION} &&\
     export CFLAGS='-fPIC' &&\
     ./configure --prefix=$INSTALL_PREFIX &&\
@@ -127,13 +129,10 @@ RUN cd $HOME &&\
     cd $HOME &&\
     rm -rf release-${GTEST_VERSION}.zip googletest-release-${GTEST_VERSION}
 
-
-
-
 ###### BOOST
 RUN cd $HOME &&\
     wget https://dl.bintray.com/boostorg/release/${BOOST_MAJOR_VERSION}.${BOOST_MINOR_VERSION}.${BOOST_RELEASE_VERSION}/source/boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION}.tar.bz2 && \
-    tar xvf boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION}.tar.bz2 && cd boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION} && \
+    tar xf boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION}.tar.bz2 && cd boost_${BOOST_MAJOR_VERSION}_${BOOST_MINOR_VERSION}_${BOOST_RELEASE_VERSION} && \
     ./bootstrap.sh --with-python=`which python3.7` --with-libraries=program_options,filesystem,system,python,regex,thread,chrono,date_time,log --prefix=$INSTALL_PREFIX && \
     ./b2  --toolset=gcc --threading=multi install && \
     cd $HOME && \
