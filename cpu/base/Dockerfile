@@ -65,7 +65,7 @@ RUN cd ~ && \
     export CC=`which mpicc`;\
     tar xf pnetcdf-${PNETCDF_VERSION}.tar.gz &&\
     cd pnetcdf-${PNETCDF_VERSION} &&\
-    export CFLAGS='-fPIC' &&\
+    export CFLAGS='-fPIC -O2' &&\
     ./configure --prefix=$INSTALL_PREFIX &&\
     make install &&\
     cd $HOME &&\
