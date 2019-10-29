@@ -21,7 +21,8 @@ RUN apt-get update && \
     	cmake python3 python3-matplotlib python3-numpy python3-scipy git \
 	gcc g++ libgtest-dev libboost-all-dev doxygen graphviz \
 		python3-pip  \
-	wget m4 libcurl4-openssl-dev
+	wget m4 libcurl4-openssl-dev \
+	texlive-full
 COPY requirements.txt /requirements.txt
 RUN pip3 install -r requirements.txt
 

@@ -26,7 +26,7 @@ ENV CC gcc-${GCC_VERSION}
 ENV CXX g++-${GCC_VERSION}
 
 RUN apt-get update &&\
-    DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential software-properties-common &&\    
+    DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential software-properties-common texlive-full &&\    
     add-apt-repository ppa:ubuntu-toolchain-r/test -y &&\
     apt-get update &&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-snapshot &&\
